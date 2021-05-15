@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@ship-website-demo/common@^0.0.23":
-  version "0.0.23"
-  resolved "https://registry.npmjs.org/@ship-website-demo/common/-/common-0.0.23.tgz#7925d1e5f491c15f11a869e6b2f66e478fac28f8"
-  integrity sha512-Kmh/J7A6/1UOKzd4IbMNA/a/4JMHM6vvbW+sL12EiTYOLG0GQDAGhVanUJWFyAaCgBXle2JeG1IcKeqawV6yCw==
+"@ship-website-demo/common@^0.0.26":
+  version "0.0.26"
+  resolved "https://registry.npmjs.org/@ship-website-demo/common/-/common-0.0.26.tgz#d7479ff11cd94c032122c37d24d7a8a8b1ff32d0"
+  integrity sha512-1PAbMgX5WguiQa/qHdMdQ0MeitMTPywBm3Yf92HdGXO43LxNGbuYcYBB/yWDGt6R3O9bib7/eBtfn4Xvwz4L3Q==
   dependencies:
     class-transformer "^0.4.0"
     class-validator "^0.13.1"

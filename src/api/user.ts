@@ -25,7 +25,9 @@ userRouter.post('/register', async (ctx, next) => {
 userRouter.post('/login', async (ctx, next) => {
   const userRepository = getRepository(UserEntity);
   const dto: UserCreatDto = ctx.request.body || {};
-  const [ user ] = await userRepository.find({ username: dto.name, password: dto.password });
+  const user = await userRepository.findOne({ username: dto.name, password: dto.password }, {
+    relations: ['books']
+  });
 
   if (!!user) {
     ctx.body = user;
@@ -37,14 +39,16 @@ userRouter.post('/login', async (ctx, next) => {
 });
 
 userRouter.get('/login', async (ctx: any) => {
-  const session = (ctx as any).session as ({ uuid: string } | undefined);
+  const session = (ctx as any).session as { uuid: string };
     
-  if (!session || !session.uuid) {
+  if (!session.uuid) {
     throwErrorResult('authenticated failed', 400);
   }
   
   const userRepository = getRepository(UserEntity);
-  const [ user ] = await userRepository.find({ uuid: session?.uuid });
+  const user = await userRepository.findOne({ uuid: session.uuid }, {
+    relations: ['books']
+  });
   
   ctx.body = user;
 });

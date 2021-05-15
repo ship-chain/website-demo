@@ -1,15 +1,15 @@
 import Router from 'koa-router';
 import { router } from './router';
-import { BookEntity, UserCreatDto, UserEntity } from '@ship-website-demo/common';
+import { BookEntity, UserEntity } from '@ship-website-demo/common';
 import { getRepository } from "typeorm";
 import { throwErrorResult } from '../util';
 
 const bookRouter = new Router();
 
-bookRouter.get('/', async (ctx, next) => {
+bookRouter.get('/a', async (ctx, next) => {
   const bookRepository = getRepository(BookEntity);
-
   let books = await bookRepository.find({})
+  
   if (!books.length) {
     books = [
       {
@@ -61,11 +61,42 @@ bookRouter.get('/', async (ctx, next) => {
         publishTime: '2013-1-1',
         price: 38,
       },
-    ] as BookEntity[];
+    ].map(book => bookRepository.create(book)) as BookEntity[];
+    books = await bookRepository.save(books);
   }
   ctx.body = books;
-  console.log('books', books);
   
+  next();
+});
+
+
+bookRouter.put('/buy/:uuid', async (ctx, next) => {
+  const bookRepository = getRepository(BookEntity);
+  const userRepository = getRepository(UserEntity);
+  const session = (ctx as any).session as { uuid: string };
+
+  if (!session.uuid) {
+    throwErrorResult('authenticated failed', 400);
+  }
+
+  const bookUuid = ctx.params.uuid || '';
+  const [ user, book ] = await Promise.all([
+    userRepository.findOne({ uuid: session.uuid }, {
+      relations: ['books']
+    }),
+    bookRepository.findOne({ uuid: bookUuid }),
+  ]);
+
+  if (!user || !book) {
+    return throwErrorResult('!user || !book');
+  }
+
+  user.books.push(book);
+  await userRepository.save(user);
+
+  console.log('update books', book, user.books);
+
+  ctx.body = user;
   next();
 });
 
