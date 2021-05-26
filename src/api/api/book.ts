@@ -2,7 +2,7 @@ import Router from 'koa-router';
 import { router } from './router';
 import { BookEntity, UserEntity } from '@ship-website-demo/common';
 import { getRepository } from "typeorm";
-import { throwErrorResult } from '../util';
+import { throwErrorResult, expectSession } from '../../util';
 
 const bookRouter = new Router();
 
@@ -69,16 +69,10 @@ bookRouter.get('/a', async (ctx, next) => {
   next();
 });
 
-
 bookRouter.put('/buy/:uuid', async (ctx, next) => {
   const bookRepository = getRepository(BookEntity);
   const userRepository = getRepository(UserEntity);
-  const session = (ctx as any).session as { uuid: string };
-
-  if (!session.uuid) {
-    throwErrorResult('authenticated failed', 400);
-  }
-
+  const session = expectSession(ctx);
   const bookUuid = ctx.params.uuid || '';
   const [ user, book ] = await Promise.all([
     userRepository.findOne({ uuid: session.uuid }, {
@@ -93,8 +87,6 @@ bookRouter.put('/buy/:uuid', async (ctx, next) => {
 
   user.books.push(book);
   await userRepository.save(user);
-
-  console.log('update books', book, user.books);
 
   ctx.body = user;
   next();

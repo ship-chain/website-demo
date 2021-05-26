@@ -1,8 +1,8 @@
 import Router from 'koa-router';
 import { router } from './router';
 import { UserCreatDto, UserEntity } from '@ship-website-demo/common';
-import { getRepository } from "typeorm";
-import { throwErrorResult } from '../util';
+import { getRepository, MetadataWithSuchNameAlreadyExistsError } from "typeorm";
+import { expectSession, throwErrorResult } from '../../util';
 
 const userRouter = new Router();
 
@@ -16,8 +16,7 @@ userRouter.post('/register', async (ctx, next) => {
     balance: 1000,
   })
   await userRepository.save(user);
-  // console.log('dto', dto);
-  // console.log('user', user);
+
   ctx.body = user;
   next();
 });
@@ -38,19 +37,15 @@ userRouter.post('/login', async (ctx, next) => {
   throwErrorResult('authenticated failed', 400);
 });
 
-userRouter.get('/login', async (ctx: any) => {
-  const session = (ctx as any).session as { uuid: string };
-    
-  if (!session.uuid) {
-    throwErrorResult('authenticated failed', 400);
-  }
-  
+userRouter.get('/login', async (ctx, next) => {
+  const session = expectSession(ctx);
   const userRepository = getRepository(UserEntity);
   const user = await userRepository.findOne({ uuid: session.uuid }, {
     relations: ['books']
   });
   
   ctx.body = user;
+  next(); 
 });
 
 router.use('/user', userRouter.routes())

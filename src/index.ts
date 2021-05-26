@@ -4,8 +4,10 @@ import staticFiles from "koa-static";
 import * as path from "path";
 import * as os from "os";
 import { Config } from "./config/default";
-import { router } from './api';
+import { apiRouter } from './api/api';
+import { chainRouter } from './api/chain';
 import { createConnection } from 'typeorm';
+import { listen } from './chain/listen';
 
 const session = require('koa-session');
 
@@ -83,11 +85,14 @@ app.use(async (ctx, next) => {
     }
 });
 
-app.use(router.routes())
-  .use(router.allowedMethods())
+app.use(apiRouter.routes())
+  .use(apiRouter.allowedMethods());
+
+app.use(chainRouter.routes())
+  .use(chainRouter.allowedMethods());
 
 app.on("error", (err, ctx) => {
-    console.log(`\x1B[91m server error !!!!!!!!!!!!! \x1B[0m`, err, ctx);
+  console.log(`\x1B[91m server error !!!!!!!!!!!!! \x1B[0m`, err, ctx);
 })
 
 function getIPAdress() {
@@ -105,6 +110,8 @@ function getIPAdress() {
         }
     }
 }
+
+listen();
 
 createConnection(Config.db as any).then(
   () =>
